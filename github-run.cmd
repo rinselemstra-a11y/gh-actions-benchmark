@@ -4,7 +4,7 @@ rem van GitHub Actions hoeft te weten. Doet achter elkaar:
 rem   1. GitHub CLI (gh) installeren als die ontbreekt (via winget)
 rem   2. inloggen bij GitHub (eenmalig, via de browser)
 rem   3. deze map als prive-repository naar GitHub pushen (eerste keer aanmaken)
-rem   4. de workflow starten en wachten tot Windows/macOS/Ubuntu klaar zijn
+rem   4. de workflow starten en wachten tot de Mac-runners klaar zijn
 rem   5. de resultaten downloaden naar .\results en vergelijken met jouw lokale
 rem      result-*.json (als er een is en Python aanwezig is)
 rem
@@ -85,7 +85,8 @@ if "%RUNID%"=="" (
     exit /b 1
 )
 echo Run %RUNID% gestart: https://github.com/%GHUSER%/%REPO%/actions/runs/%RUNID%
-echo Dit duurt meestal 2 tot 5 minuten (macOS-runners starten soms traag).
+echo Dit duurt meestal 2 tot 5 minuten. Een macOS-runner kan lang in de wachtrij staan;
+echo na 15 minuten zonder runner annuleert GitHub de job zelf. Dan later opnieuw proberen.
 gh run watch %RUNID% --exit-status
 set "RUNRC=%errorlevel%"
 
@@ -94,7 +95,8 @@ echo === 5. Resultaten ophalen ===
 if exist results rmdir /s /q results
 gh run download %RUNID% -D results
 if errorlevel 1 (
-    echo Downloaden mislukt (run status %RUNRC%).
+    rem geen haakjes in deze tekst: een ) sluit het if-blok voortijdig ("was unexpected at this time")
+    echo Downloaden mislukt, run status %RUNRC%.
     exit /b 1
 )
 set "FILES="

@@ -13,9 +13,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
-        # macos-latest is Apple Silicon (M-serie). Voeg macos-15-intel toe
-        # als je ook een Intel-Mac-runner wilt meten.
+        # Alleen Mac. macos-latest is Apple Silicon (M-serie); macos-15-intel is de
+        # laatste Intel-runner en het dichtst bij een Intel Mac Mini. Twee wachtrijen,
+        # dus bij capaciteitsgebrek op arm64 (6 nov 2026: "job was not acquired by
+        # Runner of type hosted") komt er meestal toch een resultaat.
+        os: [macos-latest, macos-15-intel]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
