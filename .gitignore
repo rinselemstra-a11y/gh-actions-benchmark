@@ -1,0 +1,4 @@
+result-*.json
+results/
+bench_seq.bin
+bench_small/

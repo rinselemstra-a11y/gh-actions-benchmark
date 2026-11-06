@@ -1,0 +1,51 @@
+name: Hardware benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      cmd:
+        description: "Optioneel eigen commando om te timen (bv. mvn -q package)"
+        required: false
+        default: ""
+
+jobs:
+  bench:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        # macos-latest is Apple Silicon (M-serie). Voeg macos-15-intel toe
+        # als je ook een Intel-Mac-runner wilt meten.
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Benchmark
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.cmd }}" ]; then
+            python bench.py --label "gh-${{ matrix.os }}" --cmd "${{ inputs.cmd }}"
+          else
+            python bench.py --label "gh-${{ matrix.os }}"
+          fi
+
+      - name: Benchmark zonder Python (bash)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          chmod +x bench.sh
+          ./bench.sh "sh-${{ matrix.os }}" . "${{ inputs.cmd }}"
+
+      - name: Benchmark zonder Python (PowerShell)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: bench.cmd "ps-${{ matrix.os }}" . "${{ inputs.cmd }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ matrix.os }}
+          path: result-*.json
